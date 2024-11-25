@@ -1,23 +1,46 @@
-import { useState } from 'react'
+import {Route, BrowserRouter as Router, Routes} from 'react-router-dom';
 import './App.css'
+import { Cart, Category, Detail, Home } from './pages';
+import { useEffect, useState } from 'react';
+import { Footer, Header } from './components';
 
 function App() {
 
-  const [num1, setNum1] = useState();
-  const [num2, setNum2] = useState();
-  const [result, setResult] = useState();
+  const [cart, setCart] = useState(localStorage.getItem('carts') 
+  ? JSON.parse(localStorage.getItem('carts')) : []);
+  console.log(cart);
+  
+  const addCart = (obj) => {
+    const ind = cart.findIndex((elem) => {
+        return elem.id === obj.id
+    })
+
+    if(ind < 0){
+      setCart([{
+        ...obj,
+        cont: 1,
+      }, ...cart])
+    }else{
+      cart[ind].cont += 1
+      setCart([...cart])
+    }
+  }
+
+  useEffect(() => {
+    localStorage.setItem('carts', JSON.stringify(cart));
+  }, [cart])
 
   return (
-    <>
-      <input type="text" onChange={(e) => {setNum1(+(e.target.value))}} />
-      <input type="text" onChange={(e) => {setNum2(+(e.target.value))}} />
-      <button onClick={() => {setResult(num1 + num2)}}>+</button>      
-      <button onClick={() => {setResult(num1 - num2)}}>-</button>      
-      <button onClick={() => {setResult(num1 * num2)}}>*</button>      
-      <button onClick={() => {setResult(num1 / num2)}}>/</button> 
-      <h1>Резудьтат</h1>
-      <h2>{result}</h2>     
-    </>
+    <Router>
+        <Header />
+        <Routes>
+          <Route path='/' element={<Home />}/>
+          <Route path='/detail/:id' element={<Detail addCart={addCart} />}/>
+          <Route path='/category' element={<Category addCart={addCart} />}/>
+          <Route path='/cart' element={<Cart cart={cart} setCart={setCart} />}/>
+        </Routes>
+        <Footer />
+    </Router>
   )
 }
 
